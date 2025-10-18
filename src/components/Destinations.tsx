@@ -53,21 +53,26 @@ const Destinations = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {destinations.map((dest, index) => (
             <Card
               key={index}
-              className="overflow-hidden hover-lift cursor-pointer group animate-slide-up border-0 shadow-elegant"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="group overflow-hidden hover:shadow-glow transition-all duration-500 cursor-pointer animate-scale-in border-2 hover:border-primary hover:-translate-y-2"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="relative overflow-hidden">
+              <div className="relative h-64 overflow-hidden">
                 <img
                   src={dest.image}
                   alt={dest.name}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125 group-hover:rotate-2"
                 />
-                <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/60 transition-all" />
+                <div className="absolute top-4 right-4 bg-gradient-primary text-primary-foreground px-4 py-2 rounded-full font-bold shadow-elegant transform group-hover:scale-110 transition-transform">
                   {dest.price}
+                </div>
+                {/* Floating label on hover */}
+                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-all transform -translate-y-2 group-hover:translate-y-0">
+                  View Details
                 </div>
               </div>
 
