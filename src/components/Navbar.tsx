@@ -49,7 +49,7 @@ const Navbar = () => {
                 isScrolled ? "text-foreground" : "text-primary-foreground drop-shadow-lg"
               )}
             >
-              TravelKu
+              Eksplora Muda
             </span>
           </div>
 
