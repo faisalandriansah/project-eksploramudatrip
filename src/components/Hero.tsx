@@ -1,147 +1,39 @@
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Search } from "lucide-react";
-import heroImage from "@/assets/sewu.png";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { MapPin, Calendar, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Array gambar hero - tambahkan gambar lu di sini
+// Demo images
 const heroImages = [
-  heroImage, // gambar pertama dari assets
-  "src/assets/kmbulo2.png", // placeholder 1
-  "src/assets/bromo.jpg", // placeholder 2
-  "src/assets/papuma.png", // placeholder 3
+  "src/assets/bromo.jpg",
+  "src/assets/kmbulo2.png",
+  "src/assets/sewu.png",
+  "src/assets/papuma.png",
 ];
 
-// ─────────────────────────────────────────────────────────────
-// Animated Counter (starts when in view)
-// ─────────────────────────────────────────────────────────────
-const AnimatedCounter = ({
-  end,
-  duration = 2000,
-  suffix = "",
-}: {
-  end: number;
-  duration?: number;
-  suffix?: string;
-}) => {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: "-10% 0px" });
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    let startTime = 0;
-    let raf = 0 as any;
-    const animate = (t: number) => {
-      if (!startTime) startTime = t;
-      const p = Math.min((t - startTime) / duration, 1);
-      setCount(Math.floor(end * p));
-      if (p < 1) raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [end, duration, inView]);
-
-  return (
-    <span ref={ref}>
-      {count}
-      {suffix}
-    </span>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────
-// Variants for staggered entrance
-// ─────────────────────────────────────────────────────────────
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.15 },
-  },
-};
-
-const itemUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 120, damping: 18 },
-  },
-};
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.6 } },
-};
-
-// ─────────────────────────────────────────────────────────────
-// Floating Blob decorative component
-// ─────────────────────────────────────────────────────────────
-const FloatBlob: React.FC<{
-  className?: string;
-  from?: {
-    x?: number;
-    y?: number;
-    scale?: number;
-    rotate?: number;
-    opacity?: number;
-  };
-  to?: {
-    x?: number;
-    y?: number;
-    scale?: number;
-    rotate?: number;
-    opacity?: number;
-  };
-  duration?: number;
-  delay?: number;
-}> = ({ className = "", from = {}, to = {}, duration = 10, delay = 0 }) => {
-  return (
-    <motion.div
-      className={
-        "absolute blur-3xl rounded-full opacity-40 will-change-transform " +
-        className
-      }
-      initial={from}
-      animate={{
-        ...to,
-        transition: {
-          repeat: Infinity,
-          repeatType: "reverse",
-          duration,
-          delay,
-        },
-      }}
-    />
-  );
-};
-
-const Hero: React.FC = () => {
+const HeroSearchSection = () => {
   const [scrollY, setScrollY] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [direction, setDirection] = useState(0);
   const isClient = typeof window !== "undefined";
-  const [isMdUp, setIsMdUp] = useState<boolean>(() =>
+  const [isMdUp, setIsMdUp] = useState(() =>
     isClient ? window.matchMedia("(min-width: 768px)").matches : false
   );
 
-  // Auto slide effect
+  // Auto slide effect - 5 seconds
   useEffect(() => {
-    if (isPaused) return;
-
     const interval = setInterval(() => {
+      setDirection(1);
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 6000); // ganti setiap 6 detik (lebih lama biar lebih smooth)
-
+    }, 5000);
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, []);
 
   useEffect(() => {
     if (!isClient) return;
     const onScroll = () => setScrollY(window.scrollY);
     const mq = window.matchMedia("(min-width: 768px)");
-    const onChange = (e: MediaQueryListEvent) => setIsMdUp(e.matches);
+    const onChange = (e) => setIsMdUp(e.matches);
 
     window.addEventListener("scroll", onScroll, { passive: true });
     mq.addEventListener("change", onChange);
@@ -151,260 +43,279 @@ const Hero: React.FC = () => {
     };
   }, [isClient]);
 
-  // Parallax only on md+ for smooth mobile
   const parallaxY = useMemo(
-    () => (isMdUp ? scrollY * 0.4 : 0),
+    () => (isMdUp ? scrollY * 0.3 : 0),
     [isMdUp, scrollY]
   );
 
+  // Navigation handlers
+  const goToPrevious = () => {
+    setDirection(-1);
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + heroImages.length) % heroImages.length
+    );
+  };
+
+  const goToNext = () => {
+    setDirection(1);
+    setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+  };
+
+  const goToSlide = (index) => {
+    setDirection(index > currentImageIndex ? 1 : -1);
+    setCurrentImageIndex(index);
+  };
+
+  // Slide animation variants
+  const slideVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? -1000 : 1000,
+      opacity: 0,
+    })
+  };
+
   return (
-    <section
-      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-900 to-black"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      {/* Background Slideshow */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence initial={false}>
-          <motion.img
-            key={currentImageIndex}
-            src={heroImages[currentImageIndex]}
-            alt={`Hero ${currentImageIndex + 1}`}
-            className="absolute inset-0 w-full h-full object-cover object-center will-change-transform"
-            style={{ transform: `translateY(${parallaxY}px)` }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: 1.5,
-              ease: [0.43, 0.13, 0.23, 0.96], // custom easing untuk smooth
-            }}
-          />
-        </AnimatePresence>
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50 md:from-black/40 md:via-black/25 md:to-black/45"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: 0.8 } }}
-        />
-      </div>
-
-      {/* Decorative blobs (hidden on mobile) */}
-      <div className="absolute inset-0 z-[1] pointer-events-none hidden md:block">
-        <FloatBlob
-          className="w-[420px] h-[420px] left-[-80px] top-[-80px] bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.6),transparent_60%)]"
-          from={{ x: 0, y: 0 }}
-          to={{ x: 30, y: 50 }}
-          duration={12}
-        />
-        <FloatBlob
-          className="w-[360px] h-[360px] right-[8%] top-[12%] bg-[radial-gradient(circle_at_center,hsl(var(--secondary)/0.6),transparent_60%)]"
-          from={{ x: 0, y: 0, opacity: 0.35 }}
-          to={{ x: -20, y: 40, opacity: 0.5 }}
-          duration={14}
-          delay={1.3}
-        />
-        <FloatBlob
-          className="w-[300px] h-[300px] left-[35%] bottom-[-120px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.35),transparent_60%)]"
-          from={{ y: 0, scale: 1 }}
-          to={{ y: -30, scale: 1.05 }}
-          duration={16}
-          delay={0.6}
-        />
-      </div>
-
-      {/* Content */}
-      <motion.div
-        className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center pt-24 pb-16 md:py-0 max-w-screen-xl"
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.div variants={itemUp} className="mb-5 md:mb-6">
-          <motion.span
-            className="px-4 py-1.5 text-xs sm:text-sm font-medium bg-gradient-to-r from-primary/95 to-secondary/95 text-white rounded-full shadow-xl inline-flex items-center gap-2 backdrop-blur-sm"
-            animate={{
-              scale: [1, 1.05, 1],
-              boxShadow: [
-                "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                "0 25px 50px -12px rgba(var(--primary-rgb), 0.5)",
-                "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-              ],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              repeatType: "loop",
-              ease: "easeInOut",
-            }}
-            whileHover={{ scale: 1.08 }}
-          >
-            <motion.span
-              className="text-sm"
-              animate={{ rotate: [0, 10, -10, 10, 0] }}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Section */}
+      <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
+        {/* Background Slideshow */}
+        <div className="absolute inset-0 z-0">
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={currentImageIndex}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: 1,
-                ease: "easeInOut",
+                x: { type: "spring", stiffness: 200, damping: 30 },
+                opacity: { duration: 0.5 }
+              }}
+              className="absolute inset-0"
+              style={{ 
+                transform: `translateY(${parallaxY}px)`,
               }}
             >
-              💫
-            </motion.span>
-            <span className="hidden sm:inline">
-              Siap Liburan? Kami Punya Penawaran Menarik Untukmu!
-            </span>
-            <span className="sm:hidden">Penawaran Menarik!</span>
-          </motion.span>
-        </motion.div>
-
-        <motion.h1
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-5 text-white leading-[1.15] tracking-tight"
-          variants={itemUp}
-        >
-          <span className="block bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent drop-shadow-2xl">
-            Temukan Keindahan Dunia
-          </span>
-          <motion.span
-            className="block text-primary mt-1 sm:mt-2 drop-shadow-2xl"
-            initial={{ backgroundPositionX: 0 }}
-            animate={{ backgroundPositionX: 200 }}
-            transition={{
-              repeat: Infinity,
-              repeatType: "reverse",
-              duration: 3,
-            }}
-          >
-            Bersama Kami
-          </motion.span>
-        </motion.h1>
-
-        <motion.p
-          className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 max-w-2xl mx-auto mb-6 sm:mb-8 md:mb-10 px-4 leading-relaxed"
-          variants={fadeIn}
-        >
-          Mulai petualangan baru, nikmati destinasi eksotis, dan ciptakan
-          kenangan indah di setiap perjalanan Anda.
-        </motion.p>
-
-        <motion.div
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-10 sm:mb-12 md:mb-16 px-4"
-          variants={itemUp}
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              size="lg"
-              className="w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base px-6 sm:px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-2xl shadow-primary/25 font-semibold"
-            >
-              <Search className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-              Mulai Petualangan
-            </Button>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base px-6 sm:px-8 bg-white/15 backdrop-blur-xl border-2 border-white/50 text-white hover:bg-white/25 hover:border-white font-semibold transition-all"
-            >
-              <Calendar className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-              Lihat Paket Wisata
-            </Button>
-          </motion.div>
-        </motion.div>
-
-        {/* Stats: responsif dan menarik */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto px-4"
-          variants={containerVariants}
-        >
-          {[
-            {
-              id: 1,
-              gradient: "from-white to-primary",
-              value: <AnimatedCounter end={500} suffix="+" />,
-              title: "Destinasi Eksotis",
-              sub: "Di seluruh dunia",
-              icon: (
-                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 sm:mb-2 opacity-70" />
-              ),
-            },
-            {
-              id: 2,
-              gradient: "from-white to-secondary",
-              value: <AnimatedCounter end={10} suffix="K+" />,
-              title: "Pelanggan Bahagia",
-              sub: "Kepercayaan terjaga",
-              icon: <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">👥</div>,
-            },
-            {
-              id: 3,
-              gradient: "from-yellow-200 to-yellow-400",
-              value: (
-                <>
-                  <AnimatedCounter end={5} />⭐
-                </>
-              ),
-              title: "Rating Sempurna",
-              sub: "Testimoni nyata",
-              icon: <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">🏆</div>,
-            },
-          ].map((card, idx) => (
-            <motion.div
-              key={card.id}
-              className="text-center bg-white/10 backdrop-blur-xl rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-white/30 shadow-xl hover:shadow-2xl hover:bg-white/15 transition-all will-change-transform group"
-              variants={itemUp}
-              whileHover={{ scale: 1.05, y: -6 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="group-hover:scale-110 transition-transform">
-                {card.icon}
-              </div>
-              <div
-                className={`text-3xl sm:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 bg-gradient-to-r ${card.gradient} bg-clip-text text-transparent drop-shadow-lg`}
-              >
-                {card.value}
-              </div>
-              <div className="text-white font-semibold text-sm sm:text-base mb-0.5 sm:mb-1">
-                {card.title}
-              </div>
-              <div className="text-white/70 text-xs sm:text-sm">{card.sub}</div>
+              <img
+                src={heroImages[currentImageIndex]}
+                alt={`Adventure ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </motion.div>
-          ))}
-        </motion.div>
-      </motion.div>
+          </AnimatePresence>
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        </div>
 
-      {/* Scroll indicator (desktop only) */}
-      <motion.div
-        className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}
-      >
+        {/* Content */}
         <motion.div
-          className="w-6 h-10 border-2 border-white/80 rounded-full flex items-start justify-center p-2"
-          animate={{ y: [0, 4, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left pt-20 pb-12 md:pt-24 md:pb-16 max-w-7xl"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <div className="w-1 h-3 bg-white/80 rounded-full" />
-        </motion.div>
-      </motion.div>
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="inline-block mb-6"
+          >
+            <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-sm font-medium">
+              ✨ Discover Your Next Journey
+            </span>
+          </motion.div>
 
-      {/* Slideshow Indicators */}
-      <div className="absolute bottom-8 md:bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {heroImages.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImageIndex(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === currentImageIndex
-                ? "w-8 bg-white"
-                : "w-2 bg-white/50 hover:bg-white/75"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </section>
+          <motion.h1
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white leading-tight tracking-tight max-w-4xl mx-auto md:mx-0"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            Adventure Begins
+            <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mt-2">
+              Here
+            </span>
+          </motion.h1>
+
+          <motion.p
+            className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto md:mx-0 mb-10 leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            Choose from thousands of organized adventures and create unforgettable memories
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="lg"
+                className="w-full sm:w-auto h-14 text-base px-10 bg-white text-gray-900 hover:bg-gray-100 shadow-2xl font-semibold rounded-xl"
+              >
+                Check out deals
+              </Button>
+            </motion.div>
+            
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto h-14 text-base px-10 bg-white/10 backdrop-blur-md text-white border-2 border-white/30 hover:bg-white/20 hover:border-white/50 shadow-xl font-semibold rounded-xl"
+              >
+                Explore More
+              </Button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Navigation Arrows - Desktop */}
+        <div className="hidden md:flex absolute inset-y-0 left-0 right-0 items-center justify-between px-8 z-20 pointer-events-none">
+          <motion.button
+            className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/30 flex items-center justify-center shadow-xl transition-all pointer-events-auto"
+            whileHover={{ scale: 1.1, x: -3 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={goToPrevious}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </motion.button>
+          <motion.button
+            className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/30 flex items-center justify-center shadow-xl transition-all pointer-events-auto"
+            whileHover={{ scale: 1.1, x: 3 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={goToNext}
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </motion.button>
+        </div>
+
+        {/* Indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {heroImages.map((_, index) => (
+            <motion.button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentImageIndex
+                  ? "w-8 bg-white"
+                  : "w-2 bg-white/40 hover:bg-white/60"
+              }`}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Search Bar Section */}
+      <section className="relative -mt-16 z-20 px-4 pb-24">
+        <motion.div
+          className="container mx-auto max-w-6xl"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Destination Input */}
+              <div className="lg:col-span-1">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Where to?
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search destination"
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300"
+                  />
+                </div>
+              </div>
+
+              {/* Date Input */}
+              <div className="lg:col-span-1">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  When?
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="date"
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300"
+                  />
+                </div>
+              </div>
+
+              {/* Type Select */}
+              <div className="lg:col-span-1">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Adventure Type
+                </label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300 bg-white">
+                  <option>All adventures</option>
+                  <option>🏖️ Beach</option>
+                  <option>⛰️ Mountain</option>
+                  <option>🏙️ City</option>
+                  <option>🏕️ Camping</option>
+                  <option>🎿 Winter</option>
+                </select>
+              </div>
+
+              {/* Search Button */}
+              <div className="lg:col-span-1 flex items-end">
+                <motion.div 
+                  className="w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button className="w-full h-[52px] bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
+                    <Search className="w-5 h-5 mr-2" />
+                    Search
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-500 mb-3">Popular destinations:</p>
+              <div className="flex flex-wrap gap-2">
+                {['Bali', 'Mount Bromo', 'Raja Ampat', 'Lombok', 'Yogyakarta'].map((dest) => (
+                  <motion.button
+                    key={dest}
+                    className="px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-700 font-medium transition-all border border-gray-200 hover:border-gray-300"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {dest}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </div>
   );
 };
 
-export default Hero;
+export default HeroSearchSection;
