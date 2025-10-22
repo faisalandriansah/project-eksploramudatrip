@@ -2,14 +2,13 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import bromo from "@/assets/bromo.jpg";
+import kmbulo2 from "@/assets/kmbulo2.png";
+import sewu from "@/assets/sewu.png";
+import papuma from "@/assets/papuma.png";
 
-// Demo images
-const heroImages = [
-  "src/assets/bromo.jpg",
-  "src/assets/kmbulo2.png",
-  "src/assets/sewu.png",
-  "src/assets/papuma.png",
-];
+// lalu ganti array:
+const heroImages = [bromo, kmbulo2, sewu, papuma];
 
 const HeroSearchSection = () => {
   const [scrollY, setScrollY] = useState(0);
