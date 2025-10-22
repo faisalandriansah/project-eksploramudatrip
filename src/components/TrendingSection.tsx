@@ -9,21 +9,21 @@ const trendingDestinations = [
   {
     name: "Bali, Indonesia",
     image: baliBg,
-    category: "Beach Paradise",
+    category: "Surga Pantai",
     trend: "+45%",
     rating: 4.9,
   },
   {
-    name: "Santorini, Greece",
+    name: "Santorini, Yunani",
     image: santorini,
-    category: "Island Escape",
+    category: "Pulau Romantis",
     trend: "+38%",
     rating: 4.8,
   },
   {
-    name: "Tokyo, Japan",
+    name: "Tokyo, Jepang",
     image: tokyo,
-    category: "City Adventure",
+    category: "Petualangan Kota",
     trend: "+52%",
     rating: 4.9,
   },
@@ -31,78 +31,71 @@ const trendingDestinations = [
 
 const TrendingSection = () => {
   return (
-    <section className="py-20 px-4 bg-gradient-mesh relative overflow-hidden">
-      {/* Animated background blobs */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float-delayed" />
-      
+    <section
+      id="trending"
+      className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden"
+    >
       <div className="container mx-auto relative z-10">
-        <div className="text-center mb-12 animate-fade-in">
+        {/* Header */}
+        <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <TrendingUp className="w-8 h-8 text-primary animate-pulse" />
-            <Badge variant="secondary" className="text-lg px-4 py-1">
-              Hot Trending
+            <TrendingUp className="w-8 h-8 text-blue-600 animate-bounce" />
+            <Badge className="text-lg px-4 py-1 bg-blue-100 text-blue-700">
+              Sedang Tren
             </Badge>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-text bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-blue-600">
             Destinasi Paling Dicari
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Tempat-tempat favorit yang sedang viral minggu ini
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Lihat destinasi favorit wisatawan minggu ini ✨
           </p>
         </div>
 
+        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {trendingDestinations.map((destination, index) => (
+          {trendingDestinations.map((destination) => (
             <Card
               key={destination.name}
-              className="group overflow-hidden border-2 hover:border-primary transition-all duration-500 hover:shadow-glow cursor-pointer animate-scale-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="group overflow-hidden border hover:border-blue-500 transition-all duration-300 hover:shadow-xl cursor-pointer"
             >
               <div className="relative h-64 overflow-hidden">
                 <img
                   src={destination.image}
                   alt={destination.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
                 {/* Trending Badge */}
-                <Badge className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white border-0 animate-pulse">
+                <Badge className="absolute top-4 right-4 bg-red-500 text-white">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   {destination.trend}
                 </Badge>
 
-                {/* Info Overlay */}
-                <div className="absolute bottom-4 left-4 right-4">
-                  <Badge variant="secondary" className="mb-2">
+                {/* Overlay Info */}
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <Badge className="bg-white/20 backdrop-blur-sm mb-2">
                     {destination.category}
                   </Badge>
-                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:translate-x-2 transition-transform">
+                  <h3 className="text-2xl font-bold mb-1 group-hover:translate-x-1 transition-transform">
                     {destination.name}
                   </h3>
                   <div className="flex items-center gap-1 text-yellow-400">
                     <Star className="w-4 h-4 fill-current" />
-                    <span className="text-white font-semibold">{destination.rating}</span>
+                    <span className="font-semibold">{destination.rating}</span>
                   </div>
                 </div>
               </div>
 
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Peningkatan Popularitas</span>
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-2 w-8 rounded-full ${
-                          i < 4 ? "bg-primary" : "bg-muted"
-                        } group-hover:animate-pulse`}
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <CardContent className="p-5 flex items-center justify-between">
+                <span className="text-sm text-gray-500">
+                  Peningkatan Popularitas
+                </span>
+                <Badge className="bg-red-100 text-red-700">
+                  {destination.trend}
+                </Badge>
               </CardContent>
             </Card>
           ))}

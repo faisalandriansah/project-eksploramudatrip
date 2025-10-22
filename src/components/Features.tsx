@@ -29,7 +29,7 @@ const Features = () => {
     <section id="features" className="py-20 px-4 bg-muted/30">
       <div className="container mx-auto">
         <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-blue-600">
             Kenapa Pilih Kami?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">

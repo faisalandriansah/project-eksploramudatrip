@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Compass, Phone } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PRIMARY = "#0B3D91"; // biru tua logo
@@ -41,30 +41,31 @@ const Navbar = () => {
       )}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
+        {/* Header bar */}
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo + brand */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-2 md:gap-3 group"
             aria-label="Eksplora Muda - kembali ke atas"
           >
             {/* Ambil dari public/logo.png */}
             <img
               src="/logo.png"
               alt="Eksplora Muda"
-              className="w-24 h-24 object-contain rounded-md transition-transform duration-300 group-hover:scale-105"
+              className="w-14 h-14 md:w-24 md:h-24 object-contain rounded-md transition-transform duration-300 group-hover:scale-105"
             />
 
-            {/* Nama brand */}
             <span
               className={cn(
-                "text-2xl font-bold tracking-wide transition-colors",
+                "text-lg md:text-2xl font-bold tracking-wide transition-colors",
                 isScrolled ? "text-[#0B3D91]" : "text-white drop-shadow-lg"
               )}
             >
               Eksplora Muda
             </span>
           </button>
+
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             <button
@@ -109,10 +110,7 @@ const Navbar = () => {
               onClick={openWA}
               size="sm"
               className="font-semibold"
-              style={{
-                backgroundColor: ACCENT,
-                color: PRIMARY,
-              }}
+              style={{ backgroundColor: ACCENT, color: PRIMARY }}
             >
               <Phone className="mr-2 h-4 w-4" />
               Hubungi Kami
@@ -121,21 +119,21 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded-lg"
+            className="md:hidden p-1.5 rounded-lg"
             aria-label="toggle menu"
             onClick={() => setIsMobileMenuOpen((v) => !v)}
           >
             {isMobileMenuOpen ? (
               <X
                 className={cn(
-                  "w-6 h-6",
+                  "w-5 h-5",
                   isScrolled ? "text-[#0B3D91]" : "text-white"
                 )}
               />
             ) : (
               <Menu
                 className={cn(
-                  "w-6 h-6",
+                  "w-5 h-5",
                   isScrolled ? "text-[#0B3D91]" : "text-white"
                 )}
               />
@@ -143,11 +141,11 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu (compact) */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pb-6 animate-slide-up">
+          <div className="md:hidden pb-4 animate-slide-up">
             <div
-              className="flex flex-col gap-2 rounded-xl p-4 shadow-xl"
+              className="flex flex-col gap-1.5 rounded-xl p-3 shadow-md"
               style={{ backgroundColor: "#FFFFFF", color: PRIMARY }}
             >
               <button
@@ -155,25 +153,25 @@ const Navbar = () => {
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   setIsMobileMenuOpen(false);
                 }}
-                className="text-left font-medium py-2 hover:text-[#0B3D91]/80"
+                className="text-left font-medium py-1.5 text-base hover:text-[#0B3D91]/80"
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToSection("destinations")}
-                className="text-left font-medium py-2 hover:text-[#0B3D91]/80"
+                className="text-left font-medium py-1.5 text-base hover:text-[#0B3D91]/80"
               >
                 Destinasi
               </button>
               <button
                 onClick={() => scrollToSection("features")}
-                className="text-left font-medium py-2 hover:text-[#0B3D91]/80"
+                className="text-left font-medium py-1.5 text-base hover:text-[#0B3D91]/80"
               >
                 Layanan
               </button>
               <button
                 onClick={() => scrollToSection("testimonials")}
-                className="text-left font-medium py-2 hover:text-[#0B3D91]/80"
+                className="text-left font-medium py-1.5 text-base hover:text-[#0B3D91]/80"
               >
                 Testimoni
               </button>
@@ -183,7 +181,7 @@ const Navbar = () => {
                   openWA();
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full font-semibold"
+                className="w-full font-semibold py-2 text-base"
                 style={{ backgroundColor: ACCENT, color: PRIMARY }}
               >
                 <Phone className="mr-2 h-4 w-4" />
@@ -195,7 +193,7 @@ const Navbar = () => {
       </div>
 
       {/* garis aksen tipis di bawah navbar saat tidak transparan */}
-      {isScrolled && <div style={{ height: 3, backgroundColor: ACCENT }} />}
+      {isScrolled && <div style={{ height: 2, backgroundColor: ACCENT }} />}
     </nav>
   );
 };

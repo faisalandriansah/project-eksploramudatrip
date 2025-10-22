@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MapPin,
+  Calendar,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  PlaneTakeoff,
+} from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import bromo from "@/assets/bromo.jpg";
@@ -7,8 +14,10 @@ import kmbulo2 from "@/assets/kmbulo2.png";
 import sewu from "@/assets/sewu.png";
 import papuma from "@/assets/papuma.png";
 
-// lalu ganti array:
 const heroImages = [bromo, kmbulo2, sewu, papuma];
+
+// ⬇️ nomor WA admin (ganti punyamu)
+const WA_NUMBER = "6281234567890";
 
 const HeroSearchSection = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -18,6 +27,11 @@ const HeroSearchSection = () => {
   const [isMdUp, setIsMdUp] = useState(() =>
     isClient ? window.matchMedia("(min-width: 768px)").matches : false
   );
+
+  // ⬇️ state form
+  const [destination, setDestination] = useState("");
+  const [date, setDate] = useState("");
+  const [type, setType] = useState("All adventures");
 
   // Auto slide effect - 5 seconds
   useEffect(() => {
@@ -32,7 +46,7 @@ const HeroSearchSection = () => {
     if (!isClient) return;
     const onScroll = () => setScrollY(window.scrollY);
     const mq = window.matchMedia("(min-width: 768px)");
-    const onChange = (e) => setIsMdUp(e.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMdUp(e.matches);
 
     window.addEventListener("scroll", onScroll, { passive: true });
     mq.addEventListener("change", onChange);
@@ -60,14 +74,45 @@ const HeroSearchSection = () => {
     setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     setDirection(index > currentImageIndex ? 1 : -1);
     setCurrentImageIndex(index);
   };
 
+  // ⬇️ buka WhatsApp dengan isi form
+  const openWhatsAppWithQuery = () => {
+    const prettyDate = date
+      ? new Date(date).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+      : "";
+
+    const lines = [
+      "Halo Eksplora Muda 👋",
+      "Saya ingin tanya paket wisata.",
+      destination ? `Tujuan: ${destination}` : null,
+      prettyDate ? `Tanggal: ${prettyDate}` : null,
+      type && type !== "All adventures" ? `Tipe: ${type}` : null,
+      "",
+      "Mohon info harga & ketersediaannya ya 🙏",
+    ].filter(Boolean) as string[];
+
+    const text = encodeURIComponent(lines.join("\n"));
+    const utm =
+      "utm_source=landing&utm_medium=hero_search&utm_campaign=wa_lead";
+
+    if (isClient) {
+      // @ts-ignore (kalau pakai GA4 dan mau track event)
+      window.gtag?.("event", "lead_whatsapp", { method: "hero_search" });
+      window.open(`https://wa.me/${WA_NUMBER}?text=${text}&${utm}`, "_blank");
+    }
+  };
+
   // Slide animation variants
   const slideVariants = {
-    enter: (direction) => ({
+    enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
       opacity: 0,
     }),
@@ -75,10 +120,10 @@ const HeroSearchSection = () => {
       x: 0,
       opacity: 1,
     },
-    exit: (direction) => ({
+    exit: (direction: number) => ({
       x: direction > 0 ? -1000 : 1000,
       opacity: 0,
-    })
+    }),
   };
 
   return (
@@ -97,12 +142,10 @@ const HeroSearchSection = () => {
               exit="exit"
               transition={{
                 x: { type: "spring", stiffness: 200, damping: 30 },
-                opacity: { duration: 0.5 }
+                opacity: { duration: 0.5 },
               }}
               className="absolute inset-0"
-              style={{ 
-                transform: `translateY(${parallaxY}px)`,
-              }}
+              style={{ transform: `translateY(${parallaxY}px)` }}
             >
               <img
                 src={heroImages[currentImageIndex]}
@@ -112,7 +155,7 @@ const HeroSearchSection = () => {
               />
             </motion.div>
           </AnimatePresence>
-          
+
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
@@ -124,7 +167,6 @@ const HeroSearchSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -132,7 +174,7 @@ const HeroSearchSection = () => {
             className="inline-block mb-6"
           >
             <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-sm font-medium">
-              ✨ Discover Your Next Journey
+              🌄 Setiap Langkah Punya Cerita
             </span>
           </motion.div>
 
@@ -142,9 +184,9 @@ const HeroSearchSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Adventure Begins
-            <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mt-2">
-              Here
+            Temukan Dirimu
+            <span className="block bg-gradient-to-r from-[#0B3D91] via-blue-500 to-sky-400 bg-clip-text text-transparent mt-2">
+              Dalam Setiap Perjalanan
             </span>
           </motion.h1>
 
@@ -154,10 +196,11 @@ const HeroSearchSection = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            Choose from thousands of organized adventures and create unforgettable memories
+            Bukan sekadar tujuan, ini tentang cara memandang dunia. Mulai
+            ceritamu sekarang - bersama Eksplora Muda.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.6 }}
@@ -167,18 +210,28 @@ const HeroSearchSection = () => {
               <Button
                 size="lg"
                 className="w-full sm:w-auto h-14 text-base px-10 bg-white text-gray-900 hover:bg-gray-100 shadow-2xl font-semibold rounded-xl"
+                onClick={() => {
+                  const el = document.getElementById("trending");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                aria-label="Geser ke Destinasi Trending"
               >
-                Check out deals
+                <PlaneTakeoff className="w-5 h-5 mr-2" />
+                Mulai Petualangan
               </Button>
             </motion.div>
-            
+
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="lg"
                 variant="outline"
                 className="w-full sm:w-auto h-14 text-base px-10 bg-white/10 backdrop-blur-md text-white border-2 border-white/30 hover:bg-white/20 hover:border-white/50 shadow-xl font-semibold rounded-xl"
+                onClick={openWhatsAppWithQuery}
+                aria-label="Explore via WhatsApp"
               >
-                Explore More
+                Lihat Destinasi
               </Button>
             </motion.div>
           </motion.div>
@@ -245,6 +298,8 @@ const HeroSearchSection = () => {
                   <input
                     type="text"
                     placeholder="Search destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300"
                   />
                 </div>
@@ -259,6 +314,8 @@ const HeroSearchSection = () => {
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300"
                   />
                 </div>
@@ -269,7 +326,11 @@ const HeroSearchSection = () => {
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">
                   Adventure Type
                 </label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300 bg-white">
+                <select
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300 bg-white"
+                >
                   <option>All adventures</option>
                   <option>🏖️ Beach</option>
                   <option>⛰️ Mountain</option>
@@ -281,12 +342,15 @@ const HeroSearchSection = () => {
 
               {/* Search Button */}
               <div className="lg:col-span-1 flex items-end">
-                <motion.div 
+                <motion.div
                   className="w-full"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Button className="w-full h-[52px] bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
+                  <Button
+                    className="w-full h-[52px] bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                    onClick={openWhatsAppWithQuery}
+                  >
                     <Search className="w-5 h-5 mr-2" />
                     Search
                   </Button>
@@ -296,11 +360,20 @@ const HeroSearchSection = () => {
 
             {/* Quick Filters */}
             <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-xs font-medium text-gray-500 mb-3">Popular destinations:</p>
+              <p className="text-xs font-medium text-gray-500 mb-3">
+                Popular destinations:
+              </p>
               <div className="flex flex-wrap gap-2">
-                {['Bali', 'Mount Bromo', 'Raja Ampat', 'Lombok', 'Yogyakarta'].map((dest) => (
+                {[
+                  "Bali",
+                  "Mount Bromo",
+                  "Raja Ampat",
+                  "Lombok",
+                  "Yogyakarta",
+                ].map((dest) => (
                   <motion.button
                     key={dest}
+                    onClick={() => setDestination(dest)}
                     className="px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-700 font-medium transition-all border border-gray-200 hover:border-gray-300"
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
